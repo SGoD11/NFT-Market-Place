@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NFT_backend as backend} from 'declarations/NFT_backend';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import homeImage from "../dist/assets/home-img-208fea06.png";
+import homeImage from "/public/home-img.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 function App() {
 
