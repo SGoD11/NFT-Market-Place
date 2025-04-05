@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import homeImage from "/home-img.png";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Item from '../components/Item';
+import Minter from '../components/Minter';
 function App() {
 
   // canister id->  dfx canister id <Canister_name>
@@ -14,8 +15,10 @@ function App() {
   return (
     <div className="App">
       <Header />
+      <Minter />
+
       {/* passing the canister ID for fetching data in the item container */}
-      <Item id ={NFT_id} />
+      {/* <Item id ={NFT_id} /> */}
      
       <img className="bottom-space" src={homeImage} />
       {/* < h1 className='' style={{"color":"red"}}> asd {NFT_id}</h1> */}
