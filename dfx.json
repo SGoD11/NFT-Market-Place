@@ -8,6 +8,10 @@
       "main": "src/NFT_new_canister/nft.mo",
       "type": "motoko"
     },
+    "NFT_canister": {
+      "main": "src/NFT_canister/nft.mo",
+      "type": "motoko"
+    },
     "NFT_frontend": {
       "dependencies": [
         "NFT_backend"
