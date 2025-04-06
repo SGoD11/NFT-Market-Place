@@ -14,7 +14,7 @@ function Item(props) {
   const [owner, setOwner] = useState("HGYft9u81728");
   const [imageData, setImageData ] = useState();
   // Taking the id of the canister to fetch data from the host using the dfinity agent
-  const id = Principal.fromText(props.id);
+  const id = props.id;
   const host = "http://127.0.0.1:3000";
   // not working for certification verification so best option is to disable certificate verification
   const agent = new HttpAgent({ host, disableCertificateVerification: true });
