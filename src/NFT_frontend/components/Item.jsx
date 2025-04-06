@@ -14,9 +14,12 @@ function Item(props) {
   // for storing the data
   const [name, setName] = useState("dhar");
   const [owner, setOwner] = useState("HGYft9u81728");
-  const [imageData, setImageData ] = useState();
+  const [imageData, setImageData] = useState();
   const [button, setButton] = useState();
   const [priceInput, setPriceInput] = useState();
+  const [loaderHidden, setloaderHidden] = useState(true);
+  const [blur, setBlur]= useState();
+  const [sellStatus, setSellStatus ] = useState("");
 
   // Taking the id of the canister to fetch data from the host using the dfinity agent
   const id = props.id;
@@ -24,12 +27,14 @@ function Item(props) {
   // not working for certification verification so best option is to disable certificate verification
   const agent = new HttpAgent({ host, disableCertificateVerification: true });
 
+  let NFTActor;
+
   //  making the actor agent work, with class actor we need to use this type of code semantics 
   async function loadNFT() {
     try {
       // for gaining root key access to bypass agent problem (agent invalid certification)
       await agent.fetchRootKey();
-      const NFTActor = Actor.createActor(idlFactory, {
+      NFTActor = Actor.createActor(idlFactory, {
         agent,
         canisterId: id,
       });
@@ -42,12 +47,21 @@ function Item(props) {
 
       //converting the nat 8 to unit 8 array
       const imageContent = new Uint8Array(imagedata);
-      const image = URL.createObjectURL(new Blob([imageContent.buffer],{type: "image/png"}));
+      const image = URL.createObjectURL(new Blob([imageContent.buffer], { type: "image/png" }));
       // setting the required data
       setName(name);
       setOwner(owner.toText());
       setImageData(image);
+
+    const nftIsListed = await NFT_backend.isListed(props.id);
+    if(nftIsListed){
+      setOwner("NFT Market Place");
+      setBlur({filter: "blur(4px)"});
+      setSellStatus("Listed");
+    }else{
+
       setButton(<Button handleClick={handleSell} text={"Sell"} />);
+    }
 
       const data = {
         name, owner: owner.toText(), image
@@ -67,7 +81,7 @@ function Item(props) {
       const Asset = await NFT.getAsset();
       // conversion of nat 8 image or blob to png
       const imageContent = new Uint8Array(Asset);
-      const image = URL.createObjectURL(new Blob([imageContent.buffer],{type: "image/png"}));
+      const image = URL.createObjectURL(new Blob([imageContent.buffer], { type: "image/png" }));
       const data = {
         name, owner, image
       };
@@ -93,41 +107,61 @@ function Item(props) {
   }, []);
 
   let price;
-  function handleSell(){
+  function handleSell() {
     console.log("sell clicked");
     setPriceInput(<input
       placeholder="Price in DANG"
       type="number"
       className="price-input"
       value={price}
-      onChange={(e)=> price = e.target.value}
+      onChange={(e) => price = e.target.value}
     />);
     console.log(price);
-    setButton(<Button handleClick={sellItem} text={"Confirm"} />)
+    setButton(<Button handleClick={sellItem} text={"Confirm"} />);
   };
-  async function sellItem(){
-    console.log("confirm click "+ parseInt(price)+ " and type is "+ typeof(price));
+  async function sellItem() {
+    setBlur({filter: "blur(4px)"});
+    setloaderHidden(false)
+    console.log("confirm click " + parseInt(price) + " and type is " + typeof (price));
     const listingResult = await NFT_backend.listItem(props.id, parseInt(price));
-    console.log("Listing "+ listingResult);
-
+    console.log("Listing " + listingResult);
+    if (listingResult == "Success") {
+      const Market_ID = await NFT_backend.getOpenDCanisterID();
+      const transferResult = await NFTActor.transferOwnerShip(Market_ID);
+      console.log("transfer is " + transferResult);
+      if(transferResult == "Success"){
+        setloaderHidden(true);
+        setButton();
+        setPriceInput();
+        setOwner("NFT market");
+        setSellStatus("Listed");
+      }
+    }
   }
 
-  !imageData ? console.log("problem") : console.log("no problem",imageData);
-  
-  
+  !imageData ? console.log("problem") : console.log("no problem", imageData);
+
+
   return (
     <div className="disGrid-item">
       <div className="disPaper-root disCard-root makeStyles-root-17 disPaper-elevation1 disPaper-rounded">
         <img
           className="disCardMedia-root makeStyles-image-19 disCardMedia-media disCardMedia-img"
           src={imageData}
+          style={blur}
         />
+        {/* Loader */}
+        <div hidden={loaderHidden} className="lds-ellipsis">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
 
         <div className="disCardContent-root">
           <h2 className="disTypography-root makeStyles-bodyText-24 disTypography-h5 disTypography-gutterBottom">
-            <span className="purple-text">
-              {name}
-            </span>
+              {name }
+            <span className="purple-text"> {sellStatus}</span>
           </h2>
           <p className="disTypography-root makeStyles-bodyText-24 disTypography-body2 disTypography-colorTextSecondary">
             Owner: {owner}
@@ -138,6 +172,7 @@ function Item(props) {
       </div>
     </div>
   );
+
 }
 
 export default Item;

@@ -7,6 +7,7 @@ import HashMap "mo:base/HashMap";
 import List "mo:base/List";
 import Nat "mo:base/Nat";
 import NFTActorClass "../Canister/canister";
+import Canister "../Canister/canister";
 
 actor NftMarketPlace {
 
@@ -65,5 +66,15 @@ actor NftMarketPlace {
     };
 
     return "Success";
+  };
+  public query func getOpenDCanisterID(): async Principal{
+    return Principal.fromActor(NftMarketPlace);
+  };
+  public query func isListed (id: Principal):async Bool{
+    if(mapOfListings.get(id) == null){
+      return false;
+    }else{
+      return true;
+    };
   };
 };
