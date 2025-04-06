@@ -6,6 +6,8 @@ import { Principal } from "@dfinity/principal";
 
 //importing canister to see whether everything is fine
 import { Canister as NFT } from "../../declarations/Canister";
+import Button from "./Button";
+import { NFT_backend } from "../../declarations/NFT_backend";
 
 function Item(props) {
 
@@ -13,6 +15,9 @@ function Item(props) {
   const [name, setName] = useState("dhar");
   const [owner, setOwner] = useState("HGYft9u81728");
   const [imageData, setImageData ] = useState();
+  const [button, setButton] = useState();
+  const [priceInput, setPriceInput] = useState();
+
   // Taking the id of the canister to fetch data from the host using the dfinity agent
   const id = props.id;
   const host = "http://127.0.0.1:3000";
@@ -42,6 +47,7 @@ function Item(props) {
       setName(name);
       setOwner(owner.toText());
       setImageData(image);
+      setButton(<Button handleClick={handleSell} text={"Sell"} />);
 
       const data = {
         name, owner: owner.toText(), image
@@ -86,8 +92,29 @@ function Item(props) {
     check();
   }, []);
 
-  !imageData ? console.log("problem") : console.log("no problem",imageData);
+  let price;
+  function handleSell(){
+    console.log("sell clicked");
+    setPriceInput(<input
+      placeholder="Price in DANG"
+      type="number"
+      className="price-input"
+      value={price}
+      onChange={(e)=> price = e.target.value}
+    />);
+    console.log(price);
+    setButton(<Button handleClick={sellItem} text={"Confirm"} />)
+  };
+  async function sellItem(){
+    console.log("confirm click "+ parseInt(price)+ " and type is "+ typeof(price));
+    const listingResult = await NFT_backend.listItem(props.id, parseInt(price));
+    console.log("Listing "+ listingResult);
 
+  }
+
+  !imageData ? console.log("problem") : console.log("no problem",imageData);
+  
+  
   return (
     <div className="disGrid-item">
       <div className="disPaper-root disCard-root makeStyles-root-17 disPaper-elevation1 disPaper-rounded">
@@ -105,6 +132,8 @@ function Item(props) {
           <p className="disTypography-root makeStyles-bodyText-24 disTypography-body2 disTypography-colorTextSecondary">
             Owner: {owner}
           </p>
+          {priceInput}
+          {button}
         </div>
       </div>
     </div>
