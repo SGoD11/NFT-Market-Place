@@ -8,6 +8,8 @@ import { Principal } from "@dfinity/principal";
 import { Canister as NFT } from "../../declarations/Canister";
 import Button from "./Button";
 import { NFT_backend } from "../../declarations/NFT_backend";
+import CURRENT_USER_ID from ".";
+import PriceLabel from "./PriceLabel";
 
 function Item(props) {
 
@@ -20,6 +22,7 @@ function Item(props) {
   const [loaderHidden, setloaderHidden] = useState(true);
   const [blur, setBlur]= useState();
   const [sellStatus, setSellStatus ] = useState("");
+  const [priceLabel, setPriceLabel] = useState()
 
   // Taking the id of the canister to fetch data from the host using the dfinity agent
   const id = props.id;
@@ -45,6 +48,8 @@ function Item(props) {
       const owner = await NFTActor.getOwner();
       const imagedata = await NFTActor.getAsset();
 
+
+       
       //converting the nat 8 to unit 8 array
       const imageContent = new Uint8Array(imagedata);
       const image = URL.createObjectURL(new Blob([imageContent.buffer], { type: "image/png" }));
@@ -53,6 +58,7 @@ function Item(props) {
       setOwner(owner.toText());
       setImageData(image);
 
+      if(props.role == "collection"){
     const nftIsListed = await NFT_backend.isListed(props.id);
     if(nftIsListed){
       setOwner("NFT Market Place");
@@ -61,6 +67,17 @@ function Item(props) {
     }else{
 
       setButton(<Button handleClick={handleSell} text={"Sell"} />);
+    }}
+    else if (props.role == "discover"){
+      const originalOwner = await NFT_backend.getOriginalOwner(props.id);
+      if(originalOwner.toText() != CURRENT_USER_ID.toText()){
+
+        setButton(<Button handleClick={handleBuy} text={"Buy"} />);
+      }
+
+      const price = await NFT_backend.getListedNFTPrice(props.id);
+      setPriceLabel(<PriceLabel sellPrice={price.toString()} />)
+
     }
 
       const data = {
@@ -137,6 +154,10 @@ function Item(props) {
         setSellStatus("Listed");
       }
     }
+  };
+
+  async function handleBuy(){
+    console.log("Buy was triggered")
   }
 
   !imageData ? console.log("problem") : console.log("no problem", imageData);
@@ -159,6 +180,7 @@ function Item(props) {
         </div>
 
         <div className="disCardContent-root">
+          {priceLabel}
           <h2 className="disTypography-root makeStyles-bodyText-24 disTypography-h5 disTypography-gutterBottom">
               {name }
             <span className="purple-text"> {sellStatus}</span>

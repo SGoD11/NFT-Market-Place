@@ -3,21 +3,21 @@ import Item from "./Item";
 import { Principal } from "@dfinity/principal";
 
 function Gallery(props) {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState();
+
+  function fetchNFTs(){
+    if(props.ids != undefined){
+      const nftComponents = props.ids.map((NFTId) => (
+        <Item id={NFTId} key={NFTId.toText()} role={props.role} />
+      ));
+      setItems(nftComponents);
+    }
+  }
 
   useEffect(() => {
-    if (Array.isArray(props.ids) && props.ids.length > 0) {
-      console.log("Received NFT IDs:", props.ids);
-
-      const nftComponents = props.ids.map((NFTId) => (
-        <Item id={NFTId} key={NFTId.toText()} />
-      ));
-
-      setItems(nftComponents);
-    } else {
-      console.warn("No NFTs to display or props.ids is undefined.");
-    }
-  }, [props.ids]); // Make sure we run again if ids change
+    fetchNFTs();
+    
+  }, []); // Make sure we run again if ids change
 
   return (
     <div className="gallery-view">
@@ -25,11 +25,13 @@ function Gallery(props) {
       <div className="disGrid-root disGrid-container disGrid-spacing-xs-2">
         <div className="disGrid-root disGrid-item disGrid-grid-xs-12">
           <div className="disGrid-root disGrid-container disGrid-spacing-xs-5 disGrid-justify-content-xs-center">
-            {items.length > 0 ? items : <p>No NFTs found.</p>}
+          {items}
           </div>
+       
         </div>
       </div>
     </div>
+
   );
 }
 

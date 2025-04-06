@@ -11,11 +11,14 @@ import CURRENT_USER_ID from "./index";
 function Header() {
 
   const [userOwnedGallery, setUserOwnedGallery] = useState();
-  
+  const [listingGallery, setListingGallery] = useState();
+
   async function getNFTs() {
     const userNFTIds = await NFT_backend.getOwnedNFTs(CURRENT_USER_ID);
     console.log(userNFTIds);
-    setUserOwnedGallery(<Gallery title="My NFT's" ids={userNFTIds} />);
+    setUserOwnedGallery(<Gallery title="My NFT's" ids={userNFTIds} role="collection" />);
+    const listedNFTIds = await NFT_backend.getListedNFTIds();
+    setListingGallery(<Gallery title="Discover" ids={listedNFTIds} role="discover" />);
   };
 
   useEffect(() => {
@@ -43,7 +46,7 @@ function Header() {
             <div className="header-space-8"></div>
             <button className="ButtonBase-root Button-root Button-text header-navButtons-3">
               <Link to="/discover">
-                Discover
+                {listingGallery}
               </Link>
             </button>
             <button className="ButtonBase-root Button-root Button-text header-navButtons-3">
